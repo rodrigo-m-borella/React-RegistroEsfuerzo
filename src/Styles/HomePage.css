@@ -1,0 +1,50 @@
+#homeRow {
+    padding: 130px 0;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+.col-sm-4{
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.template .overlay:hover {
+  opacity: 1;
+  transition: opacity 200ms;
+}
+
+.template .overlay {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  bottom: 0;
+  background-color: rgba(45,92,160,0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  opacity: 0;
+  transition: opacity 200ms;
+}
+.template .overlay, .template .template__card {
+  border-radius: 6px;
+}
+* {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Open Sans'), local('OpenSans'),
+       url('../fonts/Pauraque_Serif_Rough.ttf') format('truetype'), /* Safari, Android, iOS */
+       /*url('./fonts/Basicaline-NonCommercial.otf') format('otf'), /* Safari, Android, iOS */
+
+}
+body {
+  font-family: 'Open Sans';
+}

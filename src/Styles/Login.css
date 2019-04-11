@@ -1,0 +1,25 @@
+@media all and (min-width: 480px) {
+  .body {
+    background-color: rgb(129, 68, 68);
+  }  
+  
+  .Login {
+      padding: 10px 0;
+      margin-top: 0;
+    }
+  
+    .Login form {
+      margin: 0 auto;
+      max-width: 320px;
+      padding: 000px 0;
+    }
+
+    .PageHeader {
+        
+        font-style: italic;
+        font-family: Bradley cursive, Roundhand;
+    }
+    
+    
+  
+  }
