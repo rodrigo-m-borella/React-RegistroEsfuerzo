@@ -91,6 +91,7 @@ class ManualChargePage extends Component {
                     {value: 'Illness - enfermedad)(950X00)', label:'Illness - enfermedad)(950X00)'},
                     {value: 'Implementación - Soporte a la implementación', label:'Implementación - Soporte a la implementación'},
                     {value: 'Incidencia', label:'Incidencia'},
+                    {value: 'Incidencia mal asignada', label:'Incidencia mal asignada'},
                     {value: 'Incidencia en Guardia', label:'Incidencia en Guardia'},
                     {value: 'Licencia por examen (957X00)', label:'Licencia por examen (957X00)'},
                     {value: 'Licencia por maternidad (917X00)', label:'Licencia por maternidad (917X00)'},
@@ -206,15 +207,15 @@ class ManualChargePage extends Component {
             currentPage:0,/*esta variable por ahora no se usa, es para el redireccionamiento a la 1er pag luego de add*/ 
             exportName:''
         }
-        this.getMyIncidents = this.getMyIncidents.bind(this);
+        
         this.loadPage = this.loadPage.bind(this);
     }
 
     loadPage(){
-        //var url = new  URL("http://192.168.0.9:5006/informe/myincidents")
+        var url = new  URL("http://192.168.0.9:5006/informe/myincidents")
         //var url = new  URL("http://10.244.49.48:5006/informe/myincidents")
         //var url = new  URL("http://localhost:5006/informe/myincidents")
-        var url = new  URL("http://10.244.48.33:5006/informe/myincidents")
+        //var url = new  URL("http://10.244.48.33:5006/informe/myincidents")
         var params = {eid: localStorage.getItem('usersession')}
         url.search = new URLSearchParams(params)
         fetch(url)
@@ -223,7 +224,6 @@ class ManualChargePage extends Component {
         (result) => {
            var reverseResult = result.reverse()
            this.setState({rowsValues:reverseResult});
-           this.setState({nextValTableId:result.length+1});   
            sessionStorage.setItem('nextValTableId',result.length+1);
            
         },
@@ -239,12 +239,8 @@ class ManualChargePage extends Component {
     
     componentWillMount(){
         this.loadPage()
-        sessionStorage.setItem('newSelectedRows',[])
         }
 
-    getMyIncidents(){
-            window.localStorage('/GestionEsfuerzo/ManualCharge/')
-    }
 //sessionStorage.setItem('rowsValues',reverseResult);
     addRow(){
         var temprowsValues = this.state.rowsValues.reverse()
@@ -264,15 +260,10 @@ class ManualChargePage extends Component {
             selected: true
         }
         var newSelectedRows = this.state.newSelectedRows
-        /*
-        var newSelectedRows = sessionStorage.getItem('newSelectedRows')
-        if(newSelectedRows==''){
-            newSelectedRows=[]
-        }
-        */
+        
         newSelectedRows.push(nextValTableId)
         this.setState({newSelectedRows:newSelectedRows})
-        //sessionStorage.setItem('newSelectedRows',newSelectedRows)
+        console.log(newSelectedRows)
         temprowsValues.push(emptyElement)
         this.setState({rowsValues:temprowsValues.reverse()})
         nextValTableId++
@@ -291,39 +282,42 @@ class ManualChargePage extends Component {
         }
         );
         console.log('ITEMS TO SAVE', itemsToSave)
-
-        //fetch('http://192.168.0.9:5006/informe/updateManualCharge',
-        //fetch('http://10.244.49.48:5006/informe/updateManualCharge',
-        //fetch('http://localhost:5006/informe/updateManualCharge',
-        fetch('http://10.244.48.33:5006/informe/updateManualCharge',
-            {
-            method:'POST',
-            headers:{
-                'Accept':'application/json',
-                'Content-Type': 'application/json'
-            },
-            body:JSON.stringify(itemsToSave)
-            })
-            .then(res=>res.json())
-            .then(
-            result=>{
-                //this.getMyIncidents.bind();
-                //window.location='/GestionEsfuerzo/ManualCharge/'
-                this.loadPage()
-            },
-            (error)=>{
-                console.log("error: ", error)
-                }
-            )
-            this.getMyIncidents.bind()
+        if(itemsToSave.length!==0){
+            fetch('http://192.168.0.9:5006/informe/updateManualCharge',
+            //fetch('http://10.244.49.48:5006/informe/updateManualCharge',
+            //fetch('http://localhost:5006/informe/updateManualCharge',
+            //fetch('http://10.244.48.33:5006/informe/updateManualCharge',
+                {
+                method:'POST',
+                headers:{
+                    'Accept':'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body:JSON.stringify(itemsToSave)
+                })
+                .then(res=>res.json())
+                .then(
+                result=>{
+                    //this.getMyIncidents.bind();
+                    //window.location='/GestionEsfuerzo/ManualCharge/'
+                    this.loadPage()
+                    this.setState({newSelectedRows:[]})
+                },
+                (error)=>{
+                    console.log("error: ", error)
+                    }
+                )
+        }
 
     }
 
     copy(){
-        var nextValTableId = sessionStorage.getItem('nextValTableId');
+        var nextValTableId =  Number (sessionStorage.getItem('nextValTableId'));
         var eid = localStorage.getItem('usersession')
         var temprowsValues = this.state.rowsValues.reverse()
         var newSelectedRows = this.state.newSelectedRows
+        console.log(newSelectedRows)
+
         this.state.rowsValues.map((item,key) =>{
             if(item.selected){
                 var copiedElement ={
@@ -340,27 +334,37 @@ class ManualChargePage extends Component {
                     selected: true
                     }                      
                 
-                console.log('copiedElement',copiedElement.selected)
                 item.selected=false
-                console.log('copiedElement',copiedElement.selected)
-                temprowsValues.push(copiedElement)
                 
+                temprowsValues.push(copiedElement)
                 newSelectedRows.push(nextValTableId)
                 nextValTableId++
             }
             
         });
-        this.setState({newSelectedRows:newSelectedRows})
+        console.log(newSelectedRows)
+        
         this.setState({rowsValues:temprowsValues.reverse()})
         sessionStorage.setItem('nextValTableId',nextValTableId)
-        console.log('nextValTableId',nextValTableId)
+        
+        this.setState({newSelectedRows:newSelectedRows})
+        this.setState({currentPage:0})
         }
  
+       
+
     componentDidMount(){
+        var days = ['Domingo','Lunes','Martes','Miercoles','Jueves','Viernes','Sabado'];
         var date = new Date().getDate(); //Current Date
         var month = new Date().getMonth() + 1; //Current Month
         var year = new Date().getFullYear(); //Current Year
-
+        
+        var now = new Date()
+        Date.prototype.getDayName = function() {
+            return days[ this.getDay() ];
+        };
+        var dayname = now.getDayName()
+  
         if(date<10){
             date=`${('0' + date)}`;
         }
@@ -440,7 +444,8 @@ class ManualChargePage extends Component {
 
   render() {
 
-    const CaptionElement = () => <div><h3 style={{ borderRadius: '0.25em', textAlign: 'center', color: 'purple', border: '1px solid purple', padding: '0.5em' }}>Lista de incidencias</h3></div>;
+    //const CaptionElement = () => <div><h3 style={{ borderRadius: '0.25em', textAlign: 'center', color: 'purple', border: '1px solid purple', padding: '0.5em' }}>Lista de incidencias</h3></div>;
+    const CaptionElement = () => <div><h3 style={{ textAlign: 'center', color: 'purple', padding: '0.5em' }}>Lista de incidencias</h3></div>;
     var pagOptions = {
         paginationSize: 4,
         pageStartIndex: 0,
@@ -483,7 +488,7 @@ class ManualChargePage extends Component {
           }
       };
 
-      const MyExportCSV = (props) => {
+    const MyExportCSV = (props) => {
         const handleClick = () => {
           props.onExport();
         };
@@ -493,7 +498,7 @@ class ManualChargePage extends Component {
             </div>
           );
         };
-
+    const { SearchBar } = Search;
     return (
         <div>
           <CaptionElement/>
@@ -508,10 +513,14 @@ class ManualChargePage extends Component {
             ignoreHeader: false,
             noAutoBOM: false
             }}
+            search
             >
             {
                 props => (
                     <div>
+                        <br/>
+                        <SearchBar  { ...props.searchProps } />
+                        <br/>
                     <BootstrapTable { ...props.baseProps}
                         keyField="frontEndManualChargeTableId"
                         striped
@@ -532,7 +541,7 @@ class ManualChargePage extends Component {
                         }
                         selectRow={ selectRow }
                     />
-                    <Button variant="outline-primary" onClick={this.addRow.bind(this)}>Add</Button>  <Button variant="outline-primary" onClick={this.save.bind(this)}>Save</Button>
+                    <Button variant="outline-primary" onClick={this.addRow.bind(this)}>Add</Button>  <Button variant="outline-primary" onClick={this.save.bind(this)}>Save</Button> <Button variant="outline-primary" onClick={this.copy.bind(this)}>Copy</Button>
                     <hr />
                     <MyExportCSV { ...props.csvProps } />
                     <br />
