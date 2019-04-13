@@ -51,7 +51,7 @@ class ManualChargePage extends Component {
                 
             },{
                 dataField:'horas',
-                text:'Min.',
+                text:'Min/Hs',
                 headerStyle: (colum, colIndex) => {
                     return { width: '70px', textAlign: 'center' };
                   },
@@ -212,9 +212,9 @@ class ManualChargePage extends Component {
     }
 
     loadPage(){
-        var url = new  URL("http://192.168.0.9:5006/informe/myincidents")
+        //var url = new  URL("http://192.168.0.9:5006/informe/myincidents")
         //var url = new  URL("http://10.244.49.48:5006/informe/myincidents")
-        //var url = new  URL("http://localhost:5006/informe/myincidents")
+        var url = new  URL("http://localhost:5006/informe/myincidents")
         //var url = new  URL("http://10.244.48.33:5006/informe/myincidents")
         var params = {eid: localStorage.getItem('usersession')}
         url.search = new URLSearchParams(params)
@@ -263,7 +263,7 @@ class ManualChargePage extends Component {
         
         newSelectedRows.push(nextValTableId)
         this.setState({newSelectedRows:newSelectedRows})
-        console.log(newSelectedRows)
+        
         temprowsValues.push(emptyElement)
         this.setState({rowsValues:temprowsValues.reverse()})
         nextValTableId++
@@ -273,19 +273,18 @@ class ManualChargePage extends Component {
 
     save(){
         var itemsToSave = []
-        console.log('grilla total',this.state.rowsValues)
+        /*console.log('grilla total',this.state.rowsValues)*/
         this.state.rowsValues.map((item,key) =>{
-            console.log('item.selected',item.selected)
             if(item.selected){
                 itemsToSave.push(item)
             }
         }
         );
-        console.log('ITEMS TO SAVE', itemsToSave)
-        if(itemsToSave.length!==0){
-            fetch('http://192.168.0.9:5006/informe/updateManualCharge',
+        /*console.log('ITEMS TO SAVE', itemsToSave)*/
+        
+            //fetch('http://192.168.0.9:5006/informe/updateManualCharge',
             //fetch('http://10.244.49.48:5006/informe/updateManualCharge',
-            //fetch('http://localhost:5006/informe/updateManualCharge',
+            fetch('http://localhost:5006/informe/updateManualCharge',
             //fetch('http://10.244.48.33:5006/informe/updateManualCharge',
                 {
                 method:'POST',
@@ -300,23 +299,24 @@ class ManualChargePage extends Component {
                 result=>{
                     //this.getMyIncidents.bind();
                     //window.location='/GestionEsfuerzo/ManualCharge/'
-                    this.loadPage()
+                    
                     this.setState({newSelectedRows:[]})
+                    this.loadPage()
+                    
                 },
                 (error)=>{
                     console.log("error: ", error)
                     }
                 )
-        }
-
+        
+        
     }
 
     copy(){
         var nextValTableId =  Number (sessionStorage.getItem('nextValTableId'));
         var eid = localStorage.getItem('usersession')
         var temprowsValues = this.state.rowsValues.reverse()
-        var newSelectedRows = this.state.newSelectedRows
-        console.log(newSelectedRows)
+        var _newSelectedRows = this.state.newSelectedRows
 
         this.state.rowsValues.map((item,key) =>{
             if(item.selected){
@@ -335,20 +335,22 @@ class ManualChargePage extends Component {
                     }                      
                 
                 item.selected=false
-                
+                _newSelectedRows.push(nextValTableId)
                 temprowsValues.push(copiedElement)
-                newSelectedRows.push(nextValTableId)
+                
                 nextValTableId++
             }
             
+            
         });
-        console.log(newSelectedRows)
         
         this.setState({rowsValues:temprowsValues.reverse()})
         sessionStorage.setItem('nextValTableId',nextValTableId)
         
-        this.setState({newSelectedRows:newSelectedRows})
+        this.setState({newSelectedRows:_newSelectedRows})
+
         this.setState({currentPage:0})
+        
         }
  
        
@@ -373,7 +375,6 @@ class ManualChargePage extends Component {
         }
 
         var fecha_combodate =  `${year}-${month}-${date}`;
-        console.log('fecha_combodate',fecha_combodate)
         this.setState({
           //Setting the value of the date time
           //currentDay:year + '-' + month + '-' +date 
@@ -445,7 +446,7 @@ class ManualChargePage extends Component {
   render() {
 
     //const CaptionElement = () => <div><h3 style={{ borderRadius: '0.25em', textAlign: 'center', color: 'purple', border: '1px solid purple', padding: '0.5em' }}>Lista de incidencias</h3></div>;
-    const CaptionElement = () => <div><h3 style={{ textAlign: 'center', color: 'purple', padding: '0.5em' }}>Lista de incidencias</h3></div>;
+    const CaptionElement = () => <div><h3 style={{ textAlign: 'center', color: 'purple', padding: '0.5em' }}>Carga de esfuerzo</h3></div>;
     var pagOptions = {
         paginationSize: 4,
         pageStartIndex: 0,
@@ -498,28 +499,41 @@ class ManualChargePage extends Component {
             </div>
           );
         };
-    const { SearchBar } = Search;
+    //const { SearchBar } = Search;
     return (
         <div>
           <CaptionElement/>
+          <hr/>
           <Button variant="outline-primary" onClick={this.addRow.bind(this)}>Add</Button>  <Button variant="outline-primary" onClick={this.save.bind(this)}>Save</Button> <Button variant="outline-primary" onClick={this.copy.bind(this)}>Copy</Button>
           <ToolkitProvider
+            /*
+            search={{
+                    defaultSearch:'.'
+                }}
+            */
             keyField="id"
             data={ this.state.rowsValues }
             columns={ this.state.columns }
-            exportCSV={ {
-            fileName: this.state.exportName,
-            separator: ';',
-            ignoreHeader: false,
-            noAutoBOM: false
-            }}
-            search
+                exportCSV={ {
+                fileName: this.state.exportName,
+                separator: ';',
+                ignoreHeader: false,
+                noAutoBOM: false
+                }}
+            
             >
+            
             {
+                
                 props => (
+                    
                     <div>
+                        {/*
                         <br/>
-                        <SearchBar  { ...props.searchProps } />
+                            <SearchBar  { ...props.searchProps }
+                            />
+                        
+                        */}
                         <br/>
                     <BootstrapTable { ...props.baseProps}
                         keyField="frontEndManualChargeTableId"
@@ -536,7 +550,7 @@ class ManualChargePage extends Component {
                             autoSelectText: true, 
                             //onStartEdit:this.onStartEdit.bind(this),
                             //beforeSaveCell:this.beforeSaveCell.bind(this),
-                            afterSaveCell:this.afterSaveCell.bind(this)
+                            //afterSaveCell:this.afterSaveCell.bind(this)
                             })
                         }
                         selectRow={ selectRow }
