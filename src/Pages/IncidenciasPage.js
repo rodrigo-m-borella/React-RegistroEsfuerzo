@@ -40,8 +40,9 @@ class IncidenciasPage extends Component {
     componentWillMount(){
         
       //fetch("http://192.168.0.9:5006/informe/incidents")
-      fetch("http://10.244.48.33:5006/informe/incidents")
+      //fetch("http://10.244.48.33:5006/informe/incidents")
       //fetch("http://10.244.49.48:5006/informe/incidents")
+      fetch("http://localhost:5006/informe/incidents")
             .then(res => res.json())
             .then(
             (result) => {

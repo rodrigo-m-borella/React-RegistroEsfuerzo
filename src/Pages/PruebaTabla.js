@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import BootstrapTable from 'react-bootstrap-table-next';
 import cellEditFactory,{ Type } from 'react-bootstrap-table2-editor';
 import paginationFactory from 'react-bootstrap-table2-paginator';
+import filterFactory, { textFilter, dateFilter, selectFilter } from 'react-bootstrap-table2-filter';
 
 class PruebaTabla extends Component {
     
@@ -18,22 +19,38 @@ class PruebaTabla extends Component {
                 dataField:'field',
                 text:'field',
                 },{
-                dataField:'fecha_actividad',
-                text:'Fecha Actividad',
-                  formatter: (cell) => {
-                    let dateObj = cell;
-                    if (typeof cell !== 'object') {
-                        dateObj = new Date(cell);
-                        console.log('dateObj',dateObj)
-                        dateObj.setDate(dateObj.getDate() + 1)
-                        console.log('dateObj plus 1',dateObj)
-                    }
-                    return `${('0' + dateObj.getDate()).slice(-2)}/${('0' + (dateObj.getMonth() + 1)).slice(-2)}/${dateObj.getFullYear()}`;
+                    dataField:'fecha_actividad',
+                    text:'Fecha Actividad',
+                      formatter: (cell) => {
+                        let dateObj = cell;
+                        if (typeof cell !== 'object') {
+                            dateObj = new Date(cell);
+                            dateObj.setDate(dateObj.getDate() + 1)
+                        }
+                        return `${('0' + dateObj.getDate()).slice(-2)}/${('0' + (dateObj.getMonth() + 1)).slice(-2)}/${dateObj.getFullYear()}`;
+                        
+                        },
+                       /* formatter: (cell) =>{
+                            let dateObj = cell;
+                            if (typeof cell !== 'object') {
+                                dateObj = new Date(cell);
+                                console.log('dateObj',dateObj)
+                            }
+                            return `${(dateObj.toLocaleDateString())}`
+                        },*/
+                        editor: {
+                        type: Type.DATE
+                        },
+                    sort:true,
+                    filter: dateFilter({
+                                style: { display: 'inline-grid' },
+                                comparatorStyle: { width: '40px' },placeholder: 'custom placeholder'
+                            }),
+                    headerStyle: (colum, colIndex) => {
+                                return { width: '580px', textAlign: 'center' };
+                    },
+                    style: { display: 'inline-grid' }
                     
-                    },    
-                    editor: {
-                    type: Type.DATE
-                    }
                 }],
                 rowsValues: [{
                     id:1,
