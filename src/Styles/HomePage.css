@@ -36,15 +36,3 @@
   -moz-box-sizing: border-box;
   box-sizing: border-box;
 }
-@font-face {
-  font-family: 'Open Sans';
-  font-style: normal;
-  font-weight: 400;
-  src: local('Open Sans'), local('OpenSans'),
-       url('../fonts/Pauraque_Serif_Rough.ttf') format('truetype'), /* Safari, Android, iOS */
-       /*url('./fonts/Basicaline-NonCommercial.otf') format('otf'), /* Safari, Android, iOS */
-
-}
-body {
-  font-family: 'Open Sans';
-}
