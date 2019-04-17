@@ -16,12 +16,14 @@ class HomePage extends Component {
             manualChargeIncPage:false,
             incidentsHistoricPage:false,
             manualChargeNoIncPage:false,
+            manualChargeEvolPage:false,
             logged:true
         };
     
     this.insertNewRow=this.insertNewRow.bind(this);
     this.deleteRow=this.deleteRow.bind(this);
     this.updateRow=this.updateRow.bind(this);
+    this.goManualChargeEvol=this.goManualChargeEvol.bind(this);
     }
 
   
@@ -119,6 +121,11 @@ goManualCharge(){
     /*console.log("estado de manualcharge: ",this.state.manualChargeIncPage)*/
 }
 
+goManualChargeEvol(){
+    this.setState({manualChargeEvolPage:true})
+
+}
+
 goHistoricList(){
     this.setState({incidentsHistoricPage:true})
 }
@@ -136,8 +143,13 @@ render() {
     }
 
     if (this.state.manualChargeIncPage){
-        return <Redirect to='/GestionEsfuerzo/ManualCharge/'/>
+        return <Redirect to='/GestionEsfuerzo/ManualChargeCorr/'/>
     }
+
+    if (this.state.manualChargeEvolPage){
+        return <Redirect to='/GestionEsfuerzo/ManualChargeEvol/'/>
+    }
+   
    
     if (this.state.incidentsHistoricPage){
         return <Redirect to='/GestionEsfuerzo/Incidencias/'/>
@@ -169,7 +181,9 @@ render() {
                         <Card.Body>
                             <Card.Title>CARGA MANUAL DE ACTIVIDADES</Card.Title>
                             <Card.Text>Carga manual de horas de OT's o actividades no relacionadas a incidencias</Card.Text>
-                            <Button variant="primary" disabled="true" onClick={this.goHistoricList.bind(this)}>Update</Button>
+                            
+                            <Button variant="primary"  onClick={this.goManualChargeEvol.bind(this)}>Update</Button>
+                            
                         </Card.Body>
                         <Card.Footer>
                             <small className="text-muted">Last updated ...</small>

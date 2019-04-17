@@ -4,7 +4,8 @@ import './index.css';
 import Login from './Pages/Login';
 import Registro from './Pages/Registro';
 import Incidencias from './Pages/IncidenciasPage';
-import ManualCharge from './Pages/ManualChargePage';
+import ManualChargeCorr from './Pages/ManualChargePageCorr';
+import ManualChargeEvol from './Pages/ManualChargePageEvol';
 import PruebaTabla from './Pages/PruebaTabla';
 import Perfiles from './Components/Perfiles';
 import Perfil from './Pages/PerfilPage';
@@ -30,7 +31,8 @@ ReactDOM.render(<HashRouter>
             <Route exact path='/GestionEsfuerzo/HomePage/' component={HomePage} />
             <Route exact path='/GestionEsfuerzo/Incidencias/' component={IncidenciasPage}/>  
             <Route exact path='/GestionEsfuerzo/Perfil/' component={Perfil} />
-            <Route exact path='/GestionEsfuerzo/ManualCharge/' component={ManualCharge} />
+            <Route exact path='/GestionEsfuerzo/ManualChargeCorr/' component={ManualChargeCorr} />
+            <Route exact path='/GestionEsfuerzo/ManualChargeEvol/' component={ManualChargeEvol} />
             <Route exact path='/GestionEsfuerzo/PruebaTabla/' component={PruebaTabla} />
            
             <Route path='/GestionEsfuerzo/' component={Footer}/>

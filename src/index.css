@@ -1,6 +1,14 @@
-
-
+/*
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Open Sans'), local('OpenSans'),
+       url('./fonts/Pauraque_Serif_Rough.ttf') format('truetype'), /* Safari, Android, iOS */
+       /*url('./fonts/Basicaline-NonCommercial.otf') format('otf'), /* Safari, Android, iOS */
+/*}*/
 
 body {
-  font-family: 'Wendy One', sans-serif;
+  /*font-family: 'Tenor Sans', sans-serif;*/
+  font-family: 'Trirong' , sans-serif;
 }
