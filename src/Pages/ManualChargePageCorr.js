@@ -27,16 +27,24 @@ class ManualChargePage extends Component {
             exportName:'',
             withFilters:false,
             showModalError:false,
-            errorMessage:''
+            errorMessage:'',
+            adding:false,
+            showModalDialog:false,
+            modaDialogTitle:'',
+            modaDialogBody:'',
+            confirmDelete:false
         }
         
         this.loadPage = this.loadPage.bind(this);
+        this.validateMandatoryItemsFields = this.validateMandatoryItemsFields.bind(this);
     }
 
     loadPage(){
+        this.setState({adding:false})
+        this.setState({newSelectedRows:[]})
         //var url = new  URL("http://192.168.0.9:5006/informe/myincidents")
         //var url = new  URL("http://10.244.49.48:5006/informe/myincidents")
-        var url = new  URL("http://localhost:5006/informe/myincidents")
+        var url = new  URL("http://10.244.48.33:5006/informe/myincidents")
         //var url = new  URL("http://10.244.48.33:5006/informe/myincidents")
         var params = {eid: localStorage.getItem('usersession')}
         url.search = new URLSearchParams(params)
@@ -65,6 +73,7 @@ class ManualChargePage extends Component {
 
 //sessionStorage.setItem('rowsValues',reverseResult);
     addRow(){
+        this.setState({adding:true})
         var temprowsValues = this.state.rowsValues.reverse()
         var nextValTableId = sessionStorage.getItem('nextValTableId')
         var eid = localStorage.getItem('usersession')
@@ -93,6 +102,19 @@ class ManualChargePage extends Component {
         this.setState({currentPage:0})
     }
 
+    validateMandatoryItemsFields(itemsToSave){
+        console.log('entra a validateMandatoryItemsFields')
+        var valid=true
+        itemsToSave.map((item)=>{
+            if ((item.inc_id=='') || (item.fecha_actividad=='') || (item.horas=='') || (item.actividad=='')){
+                this.setState({errorMessage:'Los Campos Nro Inc, Fecha actividad, Min y Actividad, son obligatorios'})
+                this.setState({showModalError:true})
+                valid = false
+            }
+        })
+        return valid
+    }
+
     save(){
         var itemsToSave = []
         /*console.log('grilla total',this.state.rowsValues)*/
@@ -103,15 +125,13 @@ class ManualChargePage extends Component {
         })
 
         if (itemsToSave.length==0){
-            this.setState({errorMessage:'0 items seleccionados para guardar'})
+            this.setState({errorMessage:'0 ítems seleccionados para guardar'})
             this.setState({showModalError:true})
-        }else{
-
-            /*console.log('ITEMS TO SAVE', itemsToSave)*/
-            
+        }else if (this.validateMandatoryItemsFields(itemsToSave)){  
+                console.log('entra al fecth del save')          
                 //fetch('http://192.168.0.9:5006/informe/updateManualCharge',
                 //fetch('http://10.244.49.48:5006/informe/updateManualCharge',
-                fetch('http://localhost:5006/informe/updateManualCharge',
+                fetch('http://10.244.48.33:5006/informe/updateManualCharge',
                 //fetch('http://10.244.48.33:5006/informe/updateManualCharge',
                     {
                     method:'POST',
@@ -124,12 +144,7 @@ class ManualChargePage extends Component {
                     .then(res=>res.json())
                     .then(
                     result=>{
-                        //this.getMyIncidents.bind();
-                        //window.location='/GestionEsfuerzo/ManualCharge/'
-                        
-                        this.setState({newSelectedRows:[]})
                         this.loadPage()
-                        
                     },
                     (error)=>{
                         console.log("error: ", error)
@@ -139,47 +154,102 @@ class ManualChargePage extends Component {
         
     }
 
-    copy(){
-        var nextValTableId =  Number (sessionStorage.getItem('nextValTableId'));
-        var eid = localStorage.getItem('usersession')
-        var temprowsValues = this.state.rowsValues.reverse()
-        var _newSelectedRows = this.state.newSelectedRows
-
+    delete(){
+        var itemsToDelete = []
         this.state.rowsValues.map((item,key) =>{
             if(item.selected){
-                var copiedElement ={
-                    frontEndManualChargeTableId:nextValTableId,
-                    carga_esf_inc_id:'',
-                    inc_id:item.inc_id,
-                    fecha_actividad:this.state.currentDay,
-                    horas:'',
-                    horastasa:'',
-                    titulo:item.titulo,
-                    actividad:item.actividad,
-                    app_afectada:item.app_afectada,
-                    observaciones:'',
-                    eid: eid,
-                    selected: true
-                    }                      
-                
-                item.selected=false
-                _newSelectedRows.push(nextValTableId)
-                temprowsValues.push(copiedElement)
-                
-                nextValTableId++
+                itemsToDelete.push(item)
             }
-            
-            
-        });
-        
-        this.setState({rowsValues:temprowsValues.reverse()})
-        sessionStorage.setItem('nextValTableId',nextValTableId)
-        
-        this.setState({newSelectedRows:_newSelectedRows})
+        })
+        if (itemsToDelete.length!=0){
+                //fetch('http://10.244.49.48:5006/informe/deleteManualCharge',
+                fetch('http://10.244.48.33:5006/informe/deleteManualCharge',
+                    {
+                    method:'POST',
+                    headers:{
+                        'Accept':'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body:JSON.stringify(itemsToDelete)
+                    })
+                    .then(res=>res.json())
+                    .then(
+                    result=>{
+                        this.setState({showModalDialog:false})
+                        this.loadPage()
+                    },
+                    (error)=>{
+                        console.log("error: ", error)
+                        }
+                    )
+            }
+    }
 
-        this.setState({currentPage:0})
+    confirmDelete(){        
+        var itemsToDelete = []
+        /*console.log('grilla total',this.state.rowsValues)*/
+        this.state.rowsValues.map((item,key) =>{
+            if(item.selected){
+                itemsToDelete.push(item)
+            }
+        })
+        if (itemsToDelete.length!=0){
+            this.setState({modaDialogTitle:'Atención'})
+            this.setState({modaDialogBody:'Está seguro que quiere eliminar los ítems seleccionados?'})
+            this.setState({showModalDialog:true})           
+            }
         
+    }
+
+
+
+    copy(){
+
+        if(!this.state.adding){
+            var nextValTableId =  Number (sessionStorage.getItem('nextValTableId'));
+            var eid = localStorage.getItem('usersession')
+            var temprowsValues = this.state.rowsValues.reverse()
+            var _newSelectedRows = []
+
+            this.state.rowsValues.map((item,key) =>{
+                if(item.selected){
+                    var copiedElement ={
+                        frontEndManualChargeTableId:nextValTableId,
+                        carga_esf_inc_id:'',
+                        inc_id:item.inc_id,
+                        fecha_actividad:this.state.currentDay,
+                        horas:'',
+                        horastasa:'',
+                        titulo:item.titulo,
+                        actividad:item.actividad,
+                        app_afectada:item.app_afectada,
+                        observaciones:'',
+                        eid: eid,
+                        selected: true
+                        }                      
+                    
+                    item.selected=false
+                    _newSelectedRows.push(nextValTableId)
+                    temprowsValues.push(copiedElement)
+                    
+                    nextValTableId++
+                }
+                
+                
+            });
+            
+            this.setState({rowsValues:temprowsValues.reverse()})
+            sessionStorage.setItem('nextValTableId',nextValTableId)
+            
+            this.setState({newSelectedRows:_newSelectedRows})
+
+            this.setState({currentPage:0})
+        }else{
+            this.setState({errorMessage:'Guarde las filas agregadas antes de copiar'})
+            this.setState({showModalError:true})
         }
+        
+    }
  
        
 
@@ -214,19 +284,112 @@ class ManualChargePage extends Component {
     }
 
     afterSaveCell(oldValue, newValue, row, column){
-        if(column.dataField =='horas'){
-            if((row.horas<30) && (row.horas!=0) && (row.horas!='')){
-                this.setState({errorMessage:'La cantidad mínima de minutos por incidencia es de 30.'})
-                this.handleShowModalError()
-                row.horas=''
-            }else{
-                row.horastasa=row.horas*1.25
-                column.horastasa = row.horas*1.25
-            }           
+        if (column.dataField=='actividad'){
+            if(row.actividad=='Incidencia'){
+                if((row.horas<15) && (row.horas!=0) && (row.horas!='')){
+                    this.setState({errorMessage:'La cantidad mínima de minutos por incidencia es de 15.'})
+                    this.handleShowModalError()
+                    row.horas=''
+                }else{
+                    if (row.horas<=120){
+                        row.horastasa=120    
+                    }else{
+                        if (row.horas<=240){
+                            row.horastasa=240
+                        }else{
+                            if (row.horas<=360){
+                                row.horastasa=360
+                            }else{
+                                if (row.horas<=480){
+                                    row.horastasa=480
+                                }else{
+                                    if(row.horas>480){
+                                        row.horastasa=row.horas*1.25
+                                        row.horastasa=Math.round(row.horastasa)
+                                    }
+                                }
+                            }
+                        }
+                    } 
+                }             
+            }
+            
+            if(row.actividad=='Incidencia mal asignada sin análisis'){
+                row.horastasa=60
+            }
+            if(row.actividad=='Incidencia mal asignada con análisis'){
+                let _horasTemp=Math.round(row.horas*1.25)
+                    while (_horasTemp%5!=0){
+                        _horasTemp++
+                        console.log('_horasTemp',_horasTemp)
+                    }
+
+                row.horastasa=_horasTemp
+            }
+            if(row.actividad=='Incidencia en Guardia'){
+                let _horasTemp=Math.round(row.horas*4)
+                while (_horasTemp%5!=0){
+                    _horasTemp++
+                    console.log('_horasTemp',_horasTemp)
+                }
+                 row.horastasa=_horasTemp
+            }
         }
 
-    }
+        if (column.dataField=='horas'){
+            if(row.actividad=='Incidencia'){
+                if((row.horas<15) && (row.horas!=0) && (row.horas!='')){
+                    this.setState({errorMessage:'La cantidad mínima de minutos por incidencia es de 15.'})
+                    this.handleShowModalError()
+                    row.horas=''
+                }else{
+                    if (row.horas<=120){
+                        row.horastasa=120    
+                    }else{
+                        if (row.horas<=240){
+                            row.horastasa=240
+                        }else{
+                            if (row.horas<=360){
+                                row.horastasa=360
+                            }else{
+                                if (row.horas<=480){
+                                    row.horastasa=480
+                                }else{
+                                    if(row.horas>480){
+                                        row.horastasa=row.horas*1.25
+                                        row.horastasa=Math.round(row.horastasa)
+                                    }
+                                }
+                            }
+                        }
+                    } 
+                }             
+            }
+            
+            if(row.actividad=='Incidencia mal asignada sin análisis'){
+                row.horastasa=60
+            }
+            if(row.actividad=='Incidencia mal asignada con análisis'){
+                let _horasTemp=Math.round(row.horas*1.25)
+                    while (_horasTemp%5!=0){
+                        _horasTemp++
+                        console.log('_horasTemp',_horasTemp)
+                    }
 
+                row.horastasa=_horasTemp
+            }
+            if(row.actividad=='Incidencia en Guardia'){
+                let _horasTemp=Math.round(row.horas*4)
+                while (_horasTemp%5!=0){
+                    _horasTemp++
+                    console.log('_horasTemp',_horasTemp)
+                }
+                 row.horastasa=_horasTemp
+            }
+
+
+        }
+    }
 
     beforeSaveCell(oldValue, newValue, row, column){
         console.log('BEFORE SAVE CELL')
@@ -259,6 +422,7 @@ class ManualChargePage extends Component {
             this.setState({currentRowDateFieldFlag:currentRowDateFieldFlagVar})
         }
         console.log(this.state.currentRowDateFieldFlag)
+
     }
 
     handleShowModalError = () => {
@@ -268,6 +432,18 @@ class ManualChargePage extends Component {
     handleCloseModalError = () => {
         this.setState({showModalError:false})
     }
+
+    handleCloseModalDialog = () => {
+        this.setState({showModalDialog:false})
+    }
+
+    handleConfirmModalDialog = () => {
+        this.setState({showModalDialog:false})
+        this.delete()
+        
+    }
+
+    
 
 
   render() {
@@ -310,8 +486,18 @@ class ManualChargePage extends Component {
         onSelect: (row, isSelect, rowIndex, e) => {
             if (row.selected){
                 row.selected=false
+                let _newSelectedRows = this.state.newSelectedRows
+                for (var i=0;i<_newSelectedRows.length;i++){
+                    if (_newSelectedRows[i]==row.frontEndManualChargeTableId){
+                        _newSelectedRows.splice(i,1)
+                    }
+                }
+                this.setState({newSelectedRows:_newSelectedRows})
             }else{
                 row.selected=true
+                let _newSelectedRows = this.state.newSelectedRows
+                _newSelectedRows.push(row.frontEndManualChargeTableId)
+                this.setState({newSelectedRows:_newSelectedRows})
             }
           }
       };
@@ -352,15 +538,17 @@ class ManualChargePage extends Component {
         upperButtons=
         <Row>
             <Col><Button variant="outline-primary" onClick={this.addRow.bind(this)}>Add</Button>    <Button variant="outline-primary" onClick={this.save.bind(this)}>Save</Button>   <Button variant="outline-primary" onClick={this.copy.bind(this)}>Copy</Button></Col> 
-            <Col></Col>
+            <Col><Button variant="outline-danger" onClick={this.confirmDelete.bind(this)}>Delete</Button></Col>
+            <Col/><Col/><Col/>            
             <Col xs lg="2"><Button variant="outline-primary" onClick={ modifyHeaderColumns }> Filters </Button> <Button variant="outline-danger" onClick={clearAll}> Clear </Button></Col>
         </Row>
       }else{
         upperButtons=
         <Row>
-          <Col><Button variant="outline-primary" onClick={this.addRow.bind(this)}>Add</Button>    <Button variant="outline-primary" onClick={this.save.bind(this)}>Save</Button>   <Button variant="outline-primary" onClick={this.copy.bind(this)}>Copy</Button></Col> 
-          <Col></Col>
-          <Col xs lg="2"><Button variant="outline-primary" onClick={ modifyHeaderColumns }> Filters </Button> </Col>
+            <Col><Button variant="outline-primary" onClick={this.addRow.bind(this)}>Add</Button>    <Button variant="outline-primary" onClick={this.save.bind(this)}>Save</Button>   <Button variant="outline-primary" onClick={this.copy.bind(this)}>Copy</Button></Col> 
+            <Col><Button variant="outline-danger" onClick={this.confirmDelete.bind(this)}>Delete</Button></Col>
+            <Col/><Col/><Col/>            
+            <Col xs lg="2"><Button variant="outline-primary" onClick={ modifyHeaderColumns }> Filters </Button> </Col>
         </Row>
       }
 
@@ -389,13 +577,40 @@ class ManualChargePage extends Component {
             </>
         }  
       
-      
+    let modalDialog 
+    if (this.state.showModalDialog){
+        modalDialog =
+        <>
+        <Modal size="sm" show={this.state.showModalDialog} onHide={this.handleCloseModalDialog}>
+            <Modal.Header closeButton>
+                <Row>
+                    <Col>
+                        <Image src={latigo} roundedCircle  />
+                    </Col>
+                    <Col>
+                        <Modal.Title><h4 align="right">{this.state.modaDialogTitle}</h4></Modal.Title>
+                    </Col>
+                </Row>
+            </Modal.Header>
+            <Modal.Body>
+                <p>{this.state.modaDialogBody}</p>
+            </Modal.Body>
+            <Modal.Footer>
+                <Button variant="secondary" onClick={this.handleCloseModalDialog}>Close</Button>
+                <Button variant="primary" onClick={this.delete.bind(this)} >Delete</Button>
+            </Modal.Footer>
+        </Modal>
+        </>
+    }
+
+
     return (
         <div>
           <CaptionElement/>
           <hr/>
            {upperButtons}
            {modalError}
+           {modalDialog}
           <ToolkitProvider
             /*
             search={{
@@ -447,7 +662,11 @@ class ManualChargePage extends Component {
                         selectRow={ selectRow }
                         filter={ filterFactory() }
                     />
-                    <Button variant="outline-primary" onClick={this.addRow.bind(this)}>Add</Button>    <Button variant="outline-primary" onClick={this.save.bind(this)}>Save</Button>   <Button variant="outline-primary" onClick={this.copy.bind(this)}>Copy</Button>
+                    <Row>
+                        <Col><Button variant="outline-primary" onClick={this.addRow.bind(this)}>Add</Button>    <Button variant="outline-primary" onClick={this.save.bind(this)}>Save</Button>   <Button variant="outline-primary" onClick={this.copy.bind(this)}>Copy</Button></Col> 
+                        <Col><Button variant="outline-danger" onClick={this.confirmDelete.bind(this)}>Delete</Button></Col>
+                        <Col/><Col/><Col/><Col/>
+                    </Row>
                     <hr />
                     <MyExportCSV { ...props.csvProps } />
                     <br />

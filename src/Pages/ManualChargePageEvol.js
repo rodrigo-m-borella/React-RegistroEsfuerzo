@@ -9,6 +9,7 @@ import {evolColumnsWithFilters,clearAllFilters} from '../Properties/EvolColumnsW
 import {evolColumnsWithOutFilters} from '../Properties/EvolColumnsWithOutFilters';
 import filterFactory, { textFilter, dateFilter, selectFilter } from 'react-bootstrap-table2-filter';
 import latigo from '../img/latigo-sm.png';
+import {EVOLTASAHOURS} from '../Properties/EvolTasaHours';
 
 
 class ManualChargePage extends Component {
@@ -28,18 +29,22 @@ class ManualChargePage extends Component {
             exportName:'',
             withFilters:false,
             showModalError:false,
-            errorMessage:''
+            errorMessage:'',
+            adding:false,
+            showModalDialog:false,
+            modaDialogTitle:'',
+            modaDialogBody:'',
+            confirmDelete:false
         }
         
         this.save = this.save.bind(this)
         this.loadPage = this.loadPage.bind(this);
+        this.validateMandatoryItemsFields = this.validateMandatoryItemsFields.bind(this);
     }
 
     loadPage(){
-        //var url = new  URL("http://192.168.0.9:5006/informe/myincidents")
-        //var url = new  URL("http://10.244.49.48:5006/informe/myincidents")
-        var url = new  URL("http://localhost:5006/ppm/myevols")
-        //var url = new  URL("http://10.244.48.33:5006/informe/myincidents")
+        this.setState({adding:false})
+        var url = new  URL("http://10.244.48.33:5006/ppm/myevols")
         var params = {eid: localStorage.getItem('usersession')}
         url.search = new URLSearchParams(params)
         fetch(url)
@@ -67,6 +72,7 @@ class ManualChargePage extends Component {
 
 //sessionStorage.setItem('rowsValues',reverseResult);
     addRow(){
+        this.setState({adding:true})
         var temprowsValues = this.state.rowsValues.reverse()
         var nextValEvolTableId = sessionStorage.getItem('nextValEvolTableId')
         var eid = localStorage.getItem('usersession')
@@ -96,6 +102,20 @@ class ManualChargePage extends Component {
         this.setState({currentPage:0})
     }
 
+    validateMandatoryItemsFields(itemsToSave){
+        console.log('entra a validateMandatoryItemsFields')
+        var valid=true
+        itemsToSave.map((item)=>{
+            if ((item.fecha_actividad=='') || (item.horas=='')){
+                this.setState({errorMessage:'Campos obligatorios: Fecha actividad, Horas.'})
+                this.setState({showModalError:true})
+                valid = false
+            }
+        })
+        return valid
+    }
+
+
     save(){
         var itemsToSave = []
         this.state.rowsValues.map((item,key) =>{
@@ -106,14 +126,10 @@ class ManualChargePage extends Component {
         if (itemsToSave.length==0){
             this.setState({errorMessage:'0 items seleccionados para guardar'})
             this.setState({showModalError:true})
-        }else{
-
-            /*console.log('ITEMS TO SAVE', itemsToSave)*/
             
-                //fetch('http://192.168.0.9:5006/informe/updateManualCharge',
-                //fetch('http://10.244.49.48:5006/informe/updateManualCharge',
-                fetch('http://localhost:5006/ppm/updateManualChargeEvol',
-                //fetch('http://10.244.48.33:5006/informe/updateManualCharge',
+        }else if (this.validateMandatoryItemsFields(itemsToSave)){
+                //fetch('http://10.244.49.48:5006/ppm/updateManualChargeEvol',
+                fetch('http://10.244.48.33:5006/ppm/updateManualChargeEvol',
                     {
                     method:'POST',
                     headers:{
@@ -129,6 +145,7 @@ class ManualChargePage extends Component {
                         //window.location='/GestionEsfuerzo/ManualCharge/'
                         
                         this.setState({newSelectedRows:[]})
+                        this.setState({adding:false})
                         this.loadPage()
                         
                     },
@@ -140,48 +157,105 @@ class ManualChargePage extends Component {
         
     }
 
-    copy(){
-        var nextValEvolTableId =  Number (sessionStorage.getItem('nextValEvolTableId'));
-        var eid = localStorage.getItem('usersession')
-        var temprowsValues = this.state.rowsValues.reverse()
-        var _newSelectedRows = this.state.newSelectedRows
-
+    delete(){
+        var itemsToDelete = []
+        /*console.log('grilla total',this.state.rowsValues)*/
         this.state.rowsValues.map((item,key) =>{
             if(item.selected){
-                var copiedElement ={
-                    frontEndManualChargeTableId:nextValEvolTableId,
-                    carga_esf_evol_id:'',
-                    pry:item.pry,
-                    ot:item.ot,
-                    fecha_actividad:this.state.currentDay,
-                    horas:'',
-                    horastasa:'',
-                    titulo:item.titulo,
-                    actividad:item.actividad,
-                    app_afectada:item.app_afectada,
-                    observaciones:'',
-                    eid: eid,
-                    selected: true
-                    }                      
-                
-                item.selected=false
-                _newSelectedRows.push(nextValEvolTableId)
-                temprowsValues.push(copiedElement)
-                
-                nextValEvolTableId++
+                itemsToDelete.push(item)
             }
-            
-            
-        });
-        
-        this.setState({rowsValues:temprowsValues.reverse()})
-        sessionStorage.setItem('nextValEvolTableId',nextValEvolTableId)
-        
-        this.setState({newSelectedRows:_newSelectedRows})
+        })
+        if (itemsToDelete.length!=0){
+                //fetch('http://10.244.49.48:5006/ppm/deleteManualChargeEvol',
+                fetch('http://10.244.48.33:5006/ppm/deleteManualChargeEvol',
+                    {
+                    method:'POST',
+                    headers:{
+                        'Accept':'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body:JSON.stringify(itemsToDelete)
+                    })
+                    .then(res=>res.json())
+                    .then(
+                    result=>{
+                        //this.getMyIncidents.bind();
+                        //window.location='/GestionEsfuerzo/ManualCharge/'
+                        
+                        this.setState({newSelectedRows:[]})
+                        this.setState({showModalDialog:false})
+                        this.loadPage()
+                        
+                    },
+                    (error)=>{
+                        console.log("error: ", error)
+                        }
+                    )
+            }
+    }
 
-        this.setState({currentPage:0})
+    confirmDelete(){        
+        var itemsToDelete = []
+        /*console.log('grilla total',this.state.rowsValues)*/
+        this.state.rowsValues.map((item,key) =>{
+            if(item.selected){
+                itemsToDelete.push(item)
+            }
+        })
+        if (itemsToDelete.length!=0){
+            this.setState({modaDialogTitle:'Atención'})
+            this.setState({modaDialogBody:'Está seguro que quiere eliminar los ítems seleccionados?'})
+            this.setState({showModalDialog:true})           
+            }
         
+    }
+
+    copy(){
+        if(!this.state.adding){
+            var nextValEvolTableId =  Number (sessionStorage.getItem('nextValEvolTableId'));
+            var eid = localStorage.getItem('usersession')
+            var temprowsValues = this.state.rowsValues.reverse()
+            var _newSelectedRows = []
+
+            this.state.rowsValues.map((item,key) =>{
+                if(item.selected){
+                    var copiedElement ={
+                        frontEndManualChargeTableId:nextValEvolTableId,
+                        carga_esf_evol_id:'',
+                        pry:item.pry,
+                        ot:item.ot,
+                        fecha_actividad:this.state.currentDay,
+                        horas:'',
+                        horastasa:'',
+                        titulo:item.titulo,
+                        actividad:item.actividad,
+                        app_afectada:item.app_afectada,
+                        observaciones:'',
+                        eid: eid,
+                        selected: true
+                        }                      
+                    
+                    item.selected=false
+                    _newSelectedRows.push(nextValEvolTableId)
+                    temprowsValues.push(copiedElement)
+                    
+                    nextValEvolTableId++
+                }
+                
+                
+            });
+            
+            this.setState({rowsValues:temprowsValues.reverse()})
+            sessionStorage.setItem('nextValEvolTableId',nextValEvolTableId)
+            
+            this.setState({newSelectedRows:_newSelectedRows})
+
+            this.setState({currentPage:0})
+        }else{
+            this.setState({errorMessage:'Guarde las filas agregadas antes de copiar'})
+            this.setState({showModalError:true})
         }
+    }
  
        
 
@@ -221,6 +295,14 @@ class ManualChargePage extends Component {
         if(column.dataField =='horas'){
             console.log('detecta cambio en horas')
             console.log(row.horas)
+            var key = row.horas
+            console.log('key',key)
+            //var hoursMap = new Map([['00:45','01:00'],['01:00','01:30'],['1:15','1:35']])
+            var hoursMap = new Map(EVOLTASAHOURS)
+            let result = hoursMap.get(key)
+            console.log('result map', result)
+            row.horastasa=result
+            /*
             if(row.horas>12){
                 this.setState({errorMessage:'La cantidad máxima de horas a cargar por día es 12.'})
                 this.handleShowModalError()
@@ -229,7 +311,7 @@ class ManualChargePage extends Component {
                 row.horastasa=row.horas*1.25
                 column.horastasa = row.horas*1.25
             }
-            
+            */
         }
 /*
         if (column.dataField!=='fecha_actividad'){
@@ -291,6 +373,15 @@ class ManualChargePage extends Component {
         this.setState({showModalError:false})
     }
 
+    handleCloseModalDialog = () => {
+        this.setState({showModalDialog:false})
+    }
+
+    handleConfirmModalDialog = () => {
+        this.setState({showModalDialog:false})
+        this.delete()
+        
+    }
 
   render() {
 
@@ -332,8 +423,18 @@ class ManualChargePage extends Component {
         onSelect: (row, isSelect, rowIndex, e) => {
             if (row.selected){
                 row.selected=false
+                let _newSelectedRows = this.state.newSelectedRows
+                for (var i=0;i<_newSelectedRows.length;i++){
+                    if (_newSelectedRows[i]==row.frontEndManualChargeTableId){
+                        _newSelectedRows.splice(i,1)
+                    }
+                }
+                this.setState({newSelectedRows:_newSelectedRows})
             }else{
                 row.selected=true
+                let _newSelectedRows = this.state.newSelectedRows
+                _newSelectedRows.push(row.frontEndManualChargeTableId)
+                this.setState({newSelectedRows:_newSelectedRows})
             }
           }
       };
@@ -374,14 +475,16 @@ class ManualChargePage extends Component {
         upperButtons=
         <Row>
             <Col><Button variant="outline-primary" onClick={this.addRow.bind(this)}>Add</Button>    <Button variant="outline-primary" onClick={this.save.bind(this)}>Save</Button>   <Button variant="outline-primary" onClick={this.copy.bind(this)}>Copy</Button></Col> 
-            <Col></Col>
+            <Col><Button variant="outline-danger" onClick={this.confirmDelete.bind(this)}>Delete</Button></Col>
+            <Col/><Col/><Col/>
             <Col xs lg="2"><Button variant="outline-primary" onClick={ modifyHeaderColumns }> Filters </Button> <Button variant="outline-danger" onClick={clearAll}> Clear </Button></Col>
         </Row>
       }else{
         upperButtons=
         <Row>
-          <Col><Button variant="outline-primary" onClick={this.addRow.bind(this)}>Add</Button>    <Button variant="outline-primary" onClick={this.save.bind(this)}>Save</Button>   <Button variant="outline-primary" onClick={this.copy.bind(this)}>Copy</Button></Col> 
-          <Col></Col>
+          <Col><Button variant="outline-primary" onClick={this.addRow.bind(this)}>Add</Button>    <Button variant="outline-primary" onClick={this.save.bind(this)}>Save</Button>   <Button variant="outline-primary" onClick={this.copy.bind(this)}>Copy</Button></Col>           
+          <Col><Button variant="outline-danger" onClick={this.confirmDelete.bind(this)}>Delete</Button></Col>
+          <Col/><Col/><Col/>
           <Col xs lg="2"><Button variant="outline-primary" onClick={ modifyHeaderColumns }> Filters </Button> </Col>
         </Row>
       }
@@ -412,6 +515,32 @@ class ManualChargePage extends Component {
             </Modal>
             </>
         }  
+
+        let modalDialog 
+    if (this.state.showModalDialog){
+        modalDialog =
+        <>
+        <Modal size="sm" show={this.state.showModalDialog} onHide={this.handleCloseModalDialog}>
+            <Modal.Header closeButton>
+                <Row>
+                    <Col>
+                        <Image src={latigo} roundedCircle  />
+                    </Col>
+                    <Col>
+                        <Modal.Title><h4 align="right">{this.state.modaDialogTitle}</h4></Modal.Title>
+                    </Col>
+                </Row>
+            </Modal.Header>
+            <Modal.Body>
+                <p>{this.state.modaDialogBody}</p>
+            </Modal.Body>
+            <Modal.Footer>
+                <Button variant="secondary" onClick={this.handleCloseModalDialog}>Close</Button>
+                <Button variant="primary" onClick={this.delete.bind(this)} >Delete</Button>
+            </Modal.Footer>
+        </Modal>
+        </>
+    }
     
       
       
@@ -419,6 +548,7 @@ class ManualChargePage extends Component {
         <div>
           <CaptionElement/>
         {modalError}
+        {modalDialog}
           <hr/>
            {upperButtons}
           <ToolkitProvider
@@ -472,7 +602,11 @@ class ManualChargePage extends Component {
                         selectRow={ selectRow }
                         filter={ filterFactory() }
                     />
-                    <Button variant="outline-primary" onClick={this.addRow.bind(this)}>Add</Button>    <Button variant="outline-primary" onClick={this.save.bind(this)}>Save</Button>   <Button variant="outline-primary" onClick={this.copy.bind(this)}>Copy</Button>
+                    <Row>
+                        <Col><Button variant="outline-primary" onClick={this.addRow.bind(this)}>Add</Button>    <Button variant="outline-primary" onClick={this.save.bind(this)}>Save</Button>   <Button variant="outline-primary" onClick={this.copy.bind(this)}>Copy</Button></Col>
+                        <Col><Button variant="outline-danger" onClick={this.confirmDelete.bind(this)}>Delete</Button></Col>
+                        <Col/><Col/><Col/><Col/>
+                    </Row>
                     <hr />
                     <MyExportCSV { ...props.csvProps } />
                     <br />

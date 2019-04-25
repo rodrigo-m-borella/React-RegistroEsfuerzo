@@ -38,10 +38,7 @@ class Login extends Component {
 
   handleSubmit = event => {
     console.log("METODO SUBMIT");
-    //fetch('http://192.168.0.9:5006/user/checkuser',
-    //fetch('http://10.244.49.48:5006/user/checkuser',
-    //fetch('http://10.244.48.33:5006/user/checkuser',
-    fetch('http://localhost:5006/user/checkuser',
+    fetch('http://10.244.48.33:5006/user/checkuser',
     {
       method:'POST',
       headers:{

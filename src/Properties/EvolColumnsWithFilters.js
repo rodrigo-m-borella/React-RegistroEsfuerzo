@@ -3,6 +3,7 @@ import filterFactory, { textFilter, dateFilter, selectFilter } from 'react-boots
 import BootstrapTable from 'react-bootstrap-table-next';
 import cellEditFactory,{ Type } from 'react-bootstrap-table2-editor';
 import {APPS} from './Apps';
+import {EVOLHOURS} from './EvolHours';
 
 import { EVOLACTIVITIES } from './EvolActivities';
 
@@ -14,6 +15,7 @@ let titFilter;
 let actFilter;
 let appFilter;
 let obsFilter;
+let hourPatt=/^(0[0-9]|1[0-9]|2[0-3]|[0-9]):([0-5][0-9])$/
 
 export const evolColumnsWithFilters= [{
     
@@ -69,22 +71,11 @@ export const evolColumnsWithFilters= [{
     dataField:'horas',
     text:'Hs',
     headerStyle: (colum, colIndex) => {
-        return { width: '70px', textAlign: 'center' };
+        return { width: '100px', textAlign: 'center' };
       },
-    validator: (newValue, row, column) => {
-    if (isNaN(newValue)) {
-        return {
-        valid: false,
-        message: 'No num'
-        };
-    }
-    if(newValue < 0){
-        return{
-            vslid:false,
-            message:'(-)'
-        };
-    }    
-    return true;
+    editor: {
+        type: Type.SELECT,
+        options: EVOLHOURS
     },
     filter: textFilter({getFilter: (filter) => {
                             hsFilter = filter;

@@ -8,7 +8,7 @@ class Footer extends Component {
     return (
       
 
-          <div className="alert-primary" role="alert">Gestion y Control de horas</div>
+          <div className="alert-primary" role="alert">Gestion y Control de horas. v1.1</div>
       
     );
   }

@@ -34,7 +34,7 @@ class Inicio extends Component {
                 <img className="App-logo" src={logo}  alt="Responsive image"></img>
               {/*<img className="App-logo"  src={logo} alt="Responsive image"  ></img> */}
                 <Link to='/GestionEsfuerzo/HomePage/' >
-                  GESTION Y CONTROL DE HORAS
+                  Gestion y control de horas
                 </Link>
               </Navbar.Brand>
             </Nav>
